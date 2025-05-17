@@ -1,3 +1,16 @@
+# 📦 Автоматическая установка зависимостей
+required = ["psutil", "colorama", "requests"]
+import subprocess
+import sys
+
+for package in required:
+    try:
+        __import__(package)
+    except ImportError:
+        print(f"[!] Установка недостающего пакета: {package}")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+
+# Основной код
 import psutil
 import time
 import socket
@@ -13,12 +26,10 @@ from colorama import init, Fore, Style
 init(autoreset=True)
 
 LOG_FILE = "ratcheck_crashlog.txt"
-SUSPICIOUS_PORTS = {3389, 5900, 22, 1337, 6667, 31337, 12345, 54321}  # Порты для RAT и подозрительные
-COMMON_SAFE_PORTS = {80, 443, 53, 123}  # Обычные безопасные порты
-
+SUSPICIOUS_PORTS = {3389, 5900, 22, 1337, 6667, 31337, 12345, 54321}
+COMMON_SAFE_PORTS = {80, 443, 53, 123}
 TERMINAL_WIDTH = 90
 
-# Опции управления
 SHOW_FULL_PATH = False
 SHOW_ONLY_UNSAFE = False
 SHOW_MATRIX = False
@@ -58,7 +69,7 @@ def resolve_proto(conn):
 
 def classify_connection(raddr):
     if not raddr:
-        return "GREEN"  # Локальное подключение
+        return "GREEN"
     try:
         ip = ipaddress.ip_address(raddr.ip)
         if ip.is_private:
@@ -171,11 +182,11 @@ def main():
 
         for conn in connections:
             if not conn.raddr:
-                continue  # Игнорируем локальные только
+                continue
 
             risk = classify_connection(conn.raddr)
             if SHOW_ONLY_UNSAFE and risk == "GREEN":
-                continue  # Фильтруем безопасные
+                continue
 
             laddr = format_addr(conn.laddr)
             raddr = format_addr(conn.raddr)
@@ -191,11 +202,9 @@ def main():
 
         print_menu()
 
-        # Управление меню
         choice = input().strip().lower()
 
         if choice == "1":
-            # Обновить список - просто перезапускаем цикл
             continue
         elif choice == "2":
             SHOW_FULL_PATH = not SHOW_FULL_PATH
